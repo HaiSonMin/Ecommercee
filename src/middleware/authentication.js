@@ -1,5 +1,5 @@
 ﻿const jwt = require("jsonwebtoken");
-const { UnauthenticatedError } = require("../errors/index");
+const { UnauthenticatedError } = require("../core/success.response");
 
 const Authentication = (req, res, next) => {
   const accessToken = req.headers.authorization;
@@ -9,7 +9,6 @@ const Authentication = (req, res, next) => {
   const token = accessToken.split(" ")[1];
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    console.log(payload);
     req.user = { userId: payload.userId, userName: payload.userName };
 
     next();

@@ -1,10 +1,12 @@
 ﻿const { StatusCodes } = require("http-status-codes");
 
 const errorHandlerMiddleware = function (err, req, res, next) {
+  console.log(err);
   // Custom error
   const customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     message: err.message || "Some thing went wrong, please try again",
+    reasonStatusCode: err.reasonStatusCode || "Error",
   };
   // if (err instanceof CustomErrorApi) return res.status(err.statusCode).json({ message: err.message });
 
@@ -29,8 +31,9 @@ const errorHandlerMiddleware = function (err, req, res, next) {
     customError.message = `No item found with id :${err.value}`;
     customError.statusCode = StatusCodes.NOT_FOUND;
   }
-  //   return res.status(customError.statusCode).json({ err });
-  return res.status(customError.statusCode).json({ message: customError.message });
+  return res
+    .status(customError.statusCode)
+    .json({ status: customError.statusCode, error: customError.reasonStatusCode, message: customError.message });
 };
 
 module.exports = errorHandlerMiddleware;

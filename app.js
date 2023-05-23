@@ -31,6 +31,7 @@ app.use(xssClean());
 app.use(compression());
 app.use(morgan("tiny"));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 require("./src/db/connectDB");
 const { checkOverload } = require("./src/helpers/check-connect");
@@ -38,7 +39,23 @@ checkOverload();
 
 // Router
 // const authentication = require("./middleware/authentication");
-app.use("/**", notFound);
+// const {
+//   routerCustomer,
+//   routerMenu,
+//   routerMenuType,
+//   routerOrder,
+//   routerOrderDetail,
+//   routerPayment,
+//   routerShipper,
+//   routerShipping,
+//   routerSiteInfo,
+//   routerUser,
+// } = require("./src/routes/index");
+
+app.get("/", (req, res) => res.send("<h1>Hello App Delivery</h1>"));
+app.use("/", require("./src/routes/index"));
+
 app.use(errorHandlerMiddleware);
+app.use("/**", notFound);
 
 module.exports = app;

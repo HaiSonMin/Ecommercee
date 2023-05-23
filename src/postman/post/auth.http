@@ -1,0 +1,2 @@
+﻿@url_dev = http://localhost:5000/api/v1
+POST {{url_dev}}/user/signup
