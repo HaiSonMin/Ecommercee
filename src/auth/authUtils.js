@@ -1,7 +1,8 @@
 ﻿const JWT = require("jsonwebtoken");
-const KeyTokenService = require("../services/keyToken.service");
+const KeyTokenService = require("../services/access/keyToken.service");
 const { UnauthenticatedError, NotFoundError, BadRequestError } = require("../core/error.response");
 const createKeys = require("../utils/createKey");
+const { Types } = require("mongoose");
 
 const HEADERS = {
   API_KEY: "x-api-key",
@@ -40,7 +41,7 @@ const authentication = async (req, res, next) => {
   const userId = req.headers[HEADERS.CLIENT_ID];
   if (!userId) throw new UnauthenticatedError("Invalid request");
 
-  const keyStore = await KeyTokenService.findByUserId(userId);
+  const keyStore = await KeyTokenService.findByUserId(new Types.ObjectId(userId));
   if (!keyStore) throw new NotFoundError("Not found KeyStore");
 
   // Only work for RT
@@ -58,19 +59,20 @@ const authentication = async (req, res, next) => {
     }
   }
 
-  const accessToken = await req.headers.authorization;
+  const accessToken = await req.headers.authorization.split(" ")[1];
   if (!accessToken) throw new UnauthenticatedError("Invalid request");
+  console.log("accessToken:::", accessToken);
 
   try {
     //  3. VerifyToken
-    //  4. Check User in DB
     const decode = JWT.verify(accessToken, keyStore.publicKey);
     console.log(decode);
-    if (userId !== decode.userId) throw new UnauthenticatedError("Invalid userId");
+    if (userId !== decode.userId) throw new UnauthenticatedError("Invalid userId(client-key)");
     req.keyStore = keyStore;
+    req.user = decode;
     return next();
   } catch (error) {
-    throw new BadRequestError(error.message);
+    throw new BadRequestError(error);
   }
 };
 

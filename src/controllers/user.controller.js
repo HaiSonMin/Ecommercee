@@ -1,4 +1,4 @@
-﻿const UserService = require("../services/access.service");
+﻿const UserService = require("../services/access/access.service");
 const { OK, CREATED } = require("../core/success.response");
 
 const signUp = async (req, res) => {

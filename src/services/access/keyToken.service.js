@@ -1,7 +1,6 @@
-﻿const { NotFoundError } = require("../core/error.response");
-const { KeyTokenModel } = require("../models/index");
+﻿const { KeyTokenModel } = require("../../models/index");
 class KeyTokenService {
-  static createKeyTokens = async ({ userId, publicKey, privateKey, refreshTokenUsing }) => {
+  static createKeyTokens = async ({ userId, publicKey, privateKey, refreshTokenUsing = null }) => {
     // const token = await KeyTokenModel.create({ userId, publicKey, privateKey });
 
     const filter = { userId };

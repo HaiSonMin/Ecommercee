@@ -1,19 +1,18 @@
-﻿const { UserModel } = require("../models/index");
-const { BadRequestError, NotFoundError, ForbiddenError, UnauthenticatedError } = require("../core/error.response");
-const crypto = require("crypto");
+﻿const { UserModel } = require("../../models/index");
+const { BadRequestError, NotFoundError, ForbiddenError, UnauthenticatedError } = require("../../core/error.response");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
-const { getInfoData } = require("../utils");
+const { createTokenPair } = require("../../auth/authUtils");
+const { getInfoData } = require("../../utils");
 const { findUserByEmail } = require("./user.service");
-const createKeys = require("../utils/createKey");
+const createKeys = require("../../utils/createKey");
 const bcrypt = require("bcrypt");
 const JWT = require("jsonwebtoken");
 
-// const ROLE_USER = {
-//   ADMIN: "ADMIN",
-//   SHOP: "SHOP",
-//   USER: "USER",
-// };
+const ROLE_USER = {
+  ADMIN: "ADMIN",
+  SHOP: "CUSTOMER",
+  USER: "USER",
+};
 
 class UserService {
   static handlerRefreshToken = async ({ keyStore, user, refreshToken }) => {
@@ -113,7 +112,7 @@ class UserService {
       user: { userId, userName, email },
       tokens,
     };
-  };
+  }; 
 
   static logout = async function name(keyStore) {
     const delKey = await KeyTokenService.deleteById(keyStore._id);
@@ -140,10 +139,10 @@ class UserService {
     // 3.Create AT & RT
     const { privateKey, publicKey } = createKeys();
 
-    const { _id: userId } = user;
+    const { _id: userId, userName, role } = user;
 
     // 4.Generate token
-    const tokens = await createTokenPair({ userId, userName: user.username, email }, publicKey, privateKey);
+    const tokens = await createTokenPair({ userId, userName, email, role }, publicKey, privateKey);
 
     // 5.Create tokens (AT vs RT)
     const storeTokens = await KeyTokenService.createKeyTokens({ userId, publicKey, privateKey, refreshTokenUsing: tokens.refreshToken });
@@ -151,12 +150,12 @@ class UserService {
     if (!storeTokens) throw new BadRequestError("Store Tokens Not Value!");
 
     return {
-      user: getInfoData(user, ["_id", "fullName", "username", "email"]),
+      user: getInfoData(user, ["_id", "fullName", "username", "email", "role"]),
       tokens,
     };
   };
 
-  static signUp = async function ({ fullName, username, email, password }) {
+  static signUp = async function ({ firstName, lastName, userName, email, password, role }) {
     // ---------- Step By Step ----------
     // 1.Create New User
     // 2.Create Publickey vs PrivateKey by Crypto
@@ -165,11 +164,12 @@ class UserService {
 
     // 1.Create New User
     const newUser = await UserModel.create({
-      fullName,
-      username,
+      firstName,
+      lastName,
+      userName,
       email,
       password,
-      // roles: ROLE_USER.SHOP,
+      role,
     });
 
     // If user created successfully
@@ -194,18 +194,18 @@ class UserService {
       // 3.1 Create Publickey vs PrivateKey
       const { privateKey, publicKey } = createKeys();
 
-      const { _id: userId } = user;
+      const { _id: userId, userName, email, role } = newUser;
 
       const keyStore = await KeyTokenService.createKeyTokens({ userId, publicKey, privateKey });
 
       if (!keyStore) throw new BadRequestError("KeyStore Error");
 
       // 3.Create tokens (AT vs RT)
-      const tokens = await createTokenPair({ userId, userName: newUser.username, email: newUser.email }, publicKey, privateKey);
+      const tokens = await createTokenPair({ userId, userName, email, role }, publicKey, privateKey);
 
       // 4. Return
       return {
-        user: getInfoData(newUser, ["fullName", "username", "email"]),
+        user: getInfoData(newUser, ["firstName", "lastName", "userName", "email", "role"]),
         tokens,
       };
     }

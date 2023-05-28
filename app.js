@@ -37,21 +37,6 @@ require("./src/db/connectDB");
 const { checkOverload } = require("./src/helpers/check-connect");
 checkOverload();
 
-// Router
-// const authentication = require("./middleware/authentication");
-// const {
-//   routerCustomer,
-//   routerMenu,
-//   routerMenuType,
-//   routerOrder,
-//   routerOrderDetail,
-//   routerPayment,
-//   routerShipper,
-//   routerShipping,
-//   routerSiteInfo,
-//   routerUser,
-// } = require("./src/routes/index");
-
 app.get("/", (req, res) => res.send("<h1>Hello App Delivery</h1>"));
 app.use("/", require("./src/routes/index"));
 

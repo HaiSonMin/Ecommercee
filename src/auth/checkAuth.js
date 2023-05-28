@@ -1,4 +1,4 @@
-﻿const { findById } = require("../services/apiKey.service");
+﻿const { findById } = require("../services/access/apiKey.service");
 const { ForbiddenError } = require("../core/error.response");
 const HEADERS = {
   API_KEY: "x-api-key",
